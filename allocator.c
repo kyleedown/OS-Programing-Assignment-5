@@ -71,7 +71,11 @@ int main(int argc, char *argv[]){
             c = get_choice();
             switch(c.cmd){
                 case CMD_RQ:
+                    pid = c.args[1];
+                    size = c.args[2];
+                    fit = c.args[3];
                 case CMD_RL:
+                    pid = c.args[1];
                 case CMD_C:
                 case CMD_STAT:
                 case CMD_X:
