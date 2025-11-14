@@ -29,9 +29,11 @@ CommandType cmd_from_string(const char *s) {
     return CMD_UNKNOWN;
 }
 
-Command get_choice(){
+Command get_choice(FILE *in){
     Command result = {0};
     char buffer[256];
+
+    result.cmd = CMD_X;
 
     while(1){
         printf("allocator> ");
@@ -60,33 +62,38 @@ Command get_choice(){
 int main(int argc, char *argv[]){
     int memorySize = atoi(argv[1]);
     Command c;
-    if (argc >2){
-        if (strcmp(argv[2], "SIM") == 0){
-            /*Using file for input*/
+    FILE *input = stdin;
+    if (argc > 1) {
+        input = fopen(argv[1], "r");
+        if (!input) {
+            perror("fopen");
+            return 1;
         }
     }
-    else{ 
-        /*Using Terminal for input*/
-        while(1){
-            c = get_choice();
-            switch(c.cmd){
-                case CMD_RQ:
-                    pid = c.args[1];
-                    size = c.args[2];
-                    fit = c.args[3];
-                case CMD_RL:
-                    pid = c.args[1];
-                case CMD_C:
-                case CMD_STAT:
-                case CMD_X:
-                    printf("exiting... ");
-                    return 0;
-                default:
-                    printf("CMD complete\n");
 
-            }
-            
+    char *pid;
+    int size;
+    char* fit_type;
+
+    while(1){
+        c = get_choice(input);
+        switch(c.cmd){
+            case CMD_RQ:
+                pid = c.args[1];
+                size = c.args[2];
+                fit_type = c.args[3];
+            case CMD_RL:
+                pid = c.args[1];
+            case CMD_C:
+            case CMD_STAT:
+            case CMD_X:
+                printf("exiting... ");
+                return 0;
+            default:
+                printf("CMD complete\n");
+
         }
+        
     }
     
 
