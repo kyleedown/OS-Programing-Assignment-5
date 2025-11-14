@@ -2,59 +2,64 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int is_in_array(const char *choice, char *lst[], int list_size) {
-    for (int i = 0; i < list_size; i++) {
-        if (strcmp(choice, lst[i]) == 0) {
-            return 1;
-        }
-    }
-    return 0;
+typedef enum{
+    CMD_UNKNOWN = 0,
+    CMD_RQ,
+    CMD_RL,
+    CMD_C,
+    CMD_STAT,
+    CMD_X
+} CommandType;
+
+#define MAX_ARGS 4
+#define MAX_TOKEN 32
+
+typedef struct {
+    CommandType cmd;
+    char args[MAX_ARGS][MAX_TOKEN];
+    int argc;
+} Command;
+
+CommandType cmd_from_string(const char *s) {
+    if (strcmp(s, "RQ") == 0) return CMD_RQ;
+    if (strcmp(s, "RL") == 0) return CMD_RL;
+    if (strcmp(s, "C") == 0) return CMD_C;
+    if (strcmp(s, "STAT") == 0) return CMD_STAT;
+    if (strcmp(s, "X") == 0) return CMD_X;
+    return CMD_UNKNOWN;
 }
 
-void trim(char *s) {
-    // trim leading space
-    while (*s == ' ') s++;
+Command get_choice(){
+    Command result = {0};
+    char buffer[256];
 
-    // trim trailing space
-    char *end = s + strlen(s) - 1;
-    while (end > s && (*end == ' ')) {
-        *end = '\0';
-        end--;
-    }
-}
+    while(1){
+        printf("allocator> ");
 
-char * get_choice(char *lst[], int list_size){
-    ssize_t read;
-    char *line = NULL;
-    size_t len = 0;
+        char *token = strtok(buffer, " ");
+        if (!token) continue;
 
-    printf("allocator> ");
-    read = getline(&line, &len, stdin);
-    if (read > 0 && line[read - 1] == '\n') {
-        line[read - 1] = '\0';
-        read--;
-    }
-    trim(line);
-
-    while (!is_in_array(line, lst, list_size)){
-            printf("Incorrect option. Try again");
-            printf("allocator> ");
-            read = getline(&line, &len, stdin);
-            if (read > 0 && line[read - 1] == '\n') {
-                line[read - 1] = '\0';
-                read--;
-            }
-            trim(line);
+        result.cmd = cmd_from_string(token);
+        if(result.cmd == CMD_UNKNOWN){
+            printf("Invalid option. Try again");
+            continue;
         }
 
-    return line;
+        int i = 0;
+        while ((token = strtok(NULL," ")) != NULL && i < MAX_ARGS){
+            strncpy(result.args[1], token, MAX_TOKEN-1);
+            i++;
+        }
+        result.argc = i;
+
+        result;
+    }
 }
 
 
 int main(int argc, char *argv[]){
     int memorySize = atoi(argv[1]);
-    char* in;
-    char *choiceList[] = {"RQ","RL","C","STAT","X"};
+    Command c;
     if (argc >2){
         if (strcmp(argv[2], "SIM") == 0){
             /*Using file for input*/
@@ -62,18 +67,23 @@ int main(int argc, char *argv[]){
     }
     else{ 
         /*Using Terminal for input*/
-        do{
-            in = get_choice(choiceList,5);
-            printf("Your choice: %s", in);
+        while(1){
+            c = get_choice();
+            switch(c.cmd){
+                case CMD_RQ:
+                case CMD_RL:
+                case CMD_C:
+                case CMD_STAT:
+                case CMD_X:
+                    printf("exiting... ");
+                    return 0;
+                default:
+                    printf("CMD complete\n");
+
+            }
+            
         }
-        while (strcmp(in, "X") != 0);
     }
-    
-
-    
-
-    
-    
     
 
 
