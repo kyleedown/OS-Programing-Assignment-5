@@ -32,29 +32,35 @@ CommandType cmd_from_string(const char *s) {
 Command get_choice(FILE *in){
     Command result = {0};
     char buffer[256];
-
-    result.cmd = CMD_X;
+    
 
     while(1){
         printf("allocator> ");
+        fflush(stdout);
+        if (!fgets(buffer, sizeof(buffer), in)) {
+        result.cmd = CMD_X;  // treat as exit
+        return result;
+        }
+
+        buffer[strcspn(buffer, "\n")] = '\0';
 
         char *token = strtok(buffer, " ");
         if (!token) continue;
 
         result.cmd = cmd_from_string(token);
         if(result.cmd == CMD_UNKNOWN){
-            printf("Invalid option. Try again");
+            printf("Invalid option. Try again\n");
             continue;
         }
 
         int i = 0;
         while ((token = strtok(NULL," ")) != NULL && i < MAX_ARGS){
-            strncpy(result.args[1], token, MAX_TOKEN-1);
+            strncpy(result.args[i], token, MAX_TOKEN-1);
             i++;
         }
         result.argc = i;
 
-        result;
+        return result;
     }
 }
 
@@ -63,8 +69,8 @@ int main(int argc, char *argv[]){
     int memorySize = atoi(argv[1]);
     Command c;
     FILE *input = stdin;
-    if (argc > 1) {
-        input = fopen(argv[1], "r");
+    if (argc > 2 && (strcmp(argv[2],"SIM")) == 0) {
+        input = fopen(argv[3], "r");
         if (!input) {
             perror("fopen");
             return 1;
@@ -79,19 +85,23 @@ int main(int argc, char *argv[]){
         c = get_choice(input);
         switch(c.cmd){
             case CMD_RQ:
-                pid = c.args[1];
-                size = c.args[2];
-                fit_type = c.args[3];
+                pid = c.args[0];
+                size = atoi(c.args[1]);
+                fit_type = c.args[2];
+                printf("PID: %s\nSize: %d\nFlag: %s\n",pid,size,fit_type);
+                break;
             case CMD_RL:
-                pid = c.args[1];
+                pid = c.args[0];
+                break;
             case CMD_C:
+                break;
             case CMD_STAT:
+                break;
             case CMD_X:
                 printf("exiting... ");
                 return 0;
-            default:
-                printf("CMD complete\n");
-
+            case CMD_UNKNOWN:
+                break;
         }
         
     }
