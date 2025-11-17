@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <ctype.h>
+#include <math.h>
+
 
 typedef enum{
     CMD_UNKNOWN = 0,
